@@ -7,7 +7,6 @@ from .models import Product,Category,ProductImage
 from .serializers import ProductCreateSerializer,ProductImageSerializer,ProductSerializer
 from django.core.paginator import Paginator
 
-# Create your views here.
 
 class CategoryListAPIView(APIView):
     def get(self,request):
@@ -73,6 +72,38 @@ class ProductDetailAPIView(APIView):
         product=get_object_or_404(Product,id=pk)
         serializer=ProductSerializer(product)
         return Response(serializer.data)
+    
+
+class ProductsDetailsAPIView(APIView):
+    def get(self,request,pk):
+        try:
+            product=Product.objects.get(pk=pk)
+        except Product.DoesNotExist:
+            return Response({"error":"Product does not Found"},status=404)
+        
+        serializer=ProductSerializer(product)
+        return Response(serializer.data,status=status.HTTP_200_OK)
+    
+class RelatedProductsAPIView(APIView):
+    def get(self, request, pk):
+        try:
+            product = Product.objects.get(pk=pk)
+        except Product.DoesNotExist:
+            return Response({"error": "Product not found"}, status=404)
+
+        category_id = product.category_id
+
+        related_products = Product.objects.filter(
+            category_id=category_id
+        ).exclude(id=pk).order_by('-created_at')[:8]
+
+        serializer = ProductSerializer(related_products, many=True)
+        return Response(serializer.data, status=200)
+
+
+        
+
+
     
 
 

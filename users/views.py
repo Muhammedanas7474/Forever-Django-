@@ -30,12 +30,12 @@ class LoginAPIView(APIView):
         password = request.data.get("password")
 
         if not username or not password:
-            return Response({"error": "Username and password required"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Username and password required"}, status=400)
 
         user = authenticate(username=username, password=password)
 
         if user is None:
-            return Response({"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({"error": "Invalid credentials"}, status=401)
 
         refresh = RefreshToken.for_user(user)
         access_token = str(refresh.access_token)
@@ -47,30 +47,32 @@ class LoginAPIView(APIView):
                 "id": user.id,
                 "username": user.username,
                 "email": user.email,
-                "name": user.username  # Add this for frontend compatibility
+                "name": user.username
             }
-        }, status=status.HTTP_200_OK)
+        }, status=200)
 
-        # Set cookies
+        # ACCESS TOKEN COOKIE
         response.set_cookie(
             key="access_token",
             value=access_token,
             httponly=True,
-            secure=False,
-            samesite="Lax",
-            max_age=3600,
+            secure=False,        # True only in production (HTTPS)
+            samesite="Lax",     
+            
         )
 
+        # REFRESH TOKEN COOKIE
         response.set_cookie(
-            key="refresh_token",
-            value=refresh_token,
-            httponly=True,
-            secure=False,
-            samesite="Lax",
-            max_age=7*24*3600,
+                key="refresh_token",
+                value=refresh_token,
+                httponly=True,
+                secure=False,
+                samesite="Lax",  
+           
         )
 
         return response
+
 
 class UserAPIView(APIView):
     permission_classes = [IsAuthenticated]
