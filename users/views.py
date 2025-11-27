@@ -7,6 +7,7 @@ from rest_framework import status
 from django.contrib.auth import authenticate,get_user_model
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
+from .models import User
 
 
 # Create your views here.
@@ -24,19 +25,34 @@ class RegisterAPIView(APIView):
     
 class LoginAPIView(APIView):
     permission_classes = [AllowAny]
-    
+
     def post(self, request):
-        username = request.data.get("username")
+        identifier = request.data.get("username")   
         password = request.data.get("password")
 
-        if not username or not password:
+        if not identifier or not password:
             return Response({"error": "Username and password required"}, status=400)
 
-        user = authenticate(username=username, password=password)
+        print("LOGIN ATTEMPT:", identifier, password)
+
+        # Try to find user by username OR email
+        user_obj = (
+            User.objects.filter(username=identifier).first()
+            or User.objects.filter(email=identifier).first()
+        )
+
+        if user_obj:
+            # authenticate always by username internally
+            user = authenticate(username=user_obj.username, password=password)
+        else:
+            user = None
+
+        print("AUTH RESULT:", user)
 
         if user is None:
             return Response({"error": "Invalid credentials"}, status=401)
 
+        # ---- your token logic (unchanged) ----
         refresh = RefreshToken.for_user(user)
         access_token = str(refresh.access_token)
         refresh_token = str(refresh)
@@ -51,29 +67,27 @@ class LoginAPIView(APIView):
             }
         }, status=200)
 
-        # ACCESS TOKEN COOKIE
+        
         response.set_cookie(
             key="access_token",
             value=access_token,
             httponly=True,
             secure=False,        # True only in production (HTTPS)
-            samesite="Lax",     
-            
+            samesite="Lax",
         )
 
-        # REFRESH TOKEN COOKIE
+       
         response.set_cookie(
-                key="refresh_token",
-                value=refresh_token,
-                httponly=True,
-                secure=False,
-                samesite="Lax",  
-           
+            key="refresh_token",
+            value=refresh_token,
+            httponly=True,
+            secure=False,
+            samesite="Lax",
         )
 
+        
         return response
-
-
+    
 class UserAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -93,11 +107,9 @@ class LogoutAPIView(APIView):
 
         response = Response({"message": "Logged out successfully"}, status=status.HTTP_200_OK)
 
-        # delete cookies
         response.delete_cookie("access_token")
         response.delete_cookie("refresh_token")
 
-        # optional: blacklist refresh token
         if refresh_token:
             try:
                 token = RefreshToken(refresh_token)

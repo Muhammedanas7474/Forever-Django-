@@ -80,6 +80,7 @@ INSTALLED_APPS = [
     'products',
     'cart',
     'wishlist',
+    'order',
 
 ]
 
@@ -224,3 +225,9 @@ CSRF_TRUSTED_ORIGINS = [
 
 
 CORS_ALLOW_CREDENTIALS = True
+
+
+import os
+
+RAZORPAY_KEY_ID = os.environ.get("RAZORPAY_KEY_ID", "rzp_test_RkJzEVBNdRGda0")
+RAZORPAY_KEY_SECRET = os.environ.get("RAZORPAY_KEY_SECRET", "54nUOStPcXo3dINFsKiuSt3E")

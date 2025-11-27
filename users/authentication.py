@@ -8,7 +8,7 @@ class CookieJWTAuthentication(JWTAuthentication):
         access_token = request.COOKIES.get("access_token")
 
         if not access_token:
-            return None   # No token → DRF moves to next auth class
+            return None   
 
         try:
             validated_token = self.get_validated_token(access_token)

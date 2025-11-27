@@ -3,6 +3,7 @@ from .views import RegisterAPIView,LoginAPIView,LogoutAPIView,UserAPIView
 from cart.views import CartListView,AddToCartView,DeleteCartItemView,UpdateCartQuantityView
 from products.views import CategoryListAPIView,ProductCreateAPIView,ProductDetailAPIView,ProductListAPIView,RelatedProductsAPIView
 from wishlist.views import WishlistAPIView
+from order.views import OrderListCreateView,RazorpayOrderCreateView,RazorpayVerifyView
 
 
 urlpatterns=[
@@ -22,5 +23,9 @@ urlpatterns=[
     path("products/<int:pk>/", ProductDetailAPIView.as_view()),
     path("products/<int:pk>/related/", RelatedProductsAPIView.as_view(), name="related_products"),
 
-    path("wishlist/",WishlistAPIView.as_view())
+    path("wishlist/",WishlistAPIView.as_view()),
+
+    path("order/", OrderListCreateView.as_view()),   
+    path("order/razorpay/create/", RazorpayOrderCreateView.as_view()),
+    path("order/razorpay/verify/", RazorpayVerifyView.as_view()),
 ]

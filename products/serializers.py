@@ -40,6 +40,7 @@ class ProductCreateSerializer(serializers.ModelSerializer):
             "category",
             "sizes",
             "images",
+            "stock_count",
         ]
 
     def create(self, validated_data):
