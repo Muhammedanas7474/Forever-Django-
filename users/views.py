@@ -1,3 +1,4 @@
+
 from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny,IsAuthenticated
@@ -35,14 +36,14 @@ class LoginAPIView(APIView):
 
         print("LOGIN ATTEMPT:", identifier, password)
 
-        # Try to find user by username OR email
+        
         user_obj = (
             User.objects.filter(username=identifier).first()
             or User.objects.filter(email=identifier).first()
         )
 
         if user_obj:
-            # authenticate always by username internally
+           
             user = authenticate(username=user_obj.username, password=password)
         else:
             user = None
@@ -64,15 +65,18 @@ class LoginAPIView(APIView):
                 "username": user.username,
                 "email": user.email,
                 "name": user.username
-            }
+            },
+            "access_token": access_token,
+            "refresh_token": refresh_token
         }, status=200)
+
 
         
         response.set_cookie(
             key="access_token",
             value=access_token,
             httponly=True,
-            secure=False,        # True only in production (HTTPS)
+            secure=False,        
             samesite="Lax",
         )
 
@@ -118,3 +122,4 @@ class LogoutAPIView(APIView):
                 pass
 
         return response
+

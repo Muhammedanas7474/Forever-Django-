@@ -12,6 +12,11 @@ from django.conf import settings
 import razorpay
 
 
+
+
+
+
+
 class OrderListCreateView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -59,6 +64,8 @@ class OrderListCreateView(APIView):
                 )
 
             cart_items.delete()
+
+    
 
         serializer = OrderSerializer(order)
         return Response(serializer.data, status=201)
@@ -174,5 +181,11 @@ class RazorpayVerifyView(APIView):
 
             cart_items.delete()
 
+        
+
         serializer = OrderSerializer(order)
+
+        
+
         return Response(serializer.data, status=201)
+

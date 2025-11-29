@@ -1,64 +1,72 @@
-from django.shortcuts import render
+from django.http import Http404
+from django.core.paginator import Paginator
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from django.shortcuts import  get_object_or_404
-from .models import Product,Category,ProductImage
-from .serializers import ProductCreateSerializer,ProductImageSerializer,ProductSerializer
-from django.core.paginator import Paginator
+from django.shortcuts import get_object_or_404
+
+from .models import Product, Category
+from .serializers import ProductCreateSerializer, ProductSerializer,CategorySerializer
+
 
 
 class CategoryListAPIView(APIView):
-    def get(self,request):
-        categories=Category.objects.all()
-        data=[{"id":c.id,"name":c.name} for c in categories]
-        return Response(data)
-    
+    def get(self, request, format=None):
+        categories = Category.objects.all()
+        serializer = CategorySerializer(categories, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+
+
 class ProductCreateAPIView(APIView):
-    def post(self,request):
-        serializer=ProductCreateSerializer(data=request.data)
+    def post(self, request, format=None):
+        serializer = ProductCreateSerializer(data=request.data)
         if serializer.is_valid():
-            product=serializer.save()
-            return Response({"messege":"Product created successfully"},status=status.HTTP_201_CREATED)
-        return Response(serializer.errors,status=status.HTTP_404_NOT_FOUND)
-    
+            serializer.save()
+            return Response({"message": "Product created successfully"}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
 class ProductListAPIView(APIView):
-    def get(self,request):
-        products=Product.objects.all()
+    def get(self, request, format=None):
+        products = Product.objects.all()
 
-        category=request.GET.get('category')
+        
+        category = request.GET.get("category")
         if category:
-            products=products.filter(category_id=category)
+            products = products.filter(category_id=category)
 
-        min_price=request.GET.get('min_price')
+        min_price = request.GET.get("min_price")
         if min_price:
-            products=products.filter(price__gte=min_price)
+            products = products.filter(price__gte=min_price)
 
-        max_price=request.GET.get('max_price')
+        max_price = request.GET.get("max_price")
         if max_price:
-            products=products.filter(price__lte=max_price)
+            products = products.filter(price__lte=max_price)
+
         
-        search=request.GET.get('search')
+        search = request.GET.get("search")
         if search:
-            products=products.filter(name__icontains=search)
-        
+            products = products.filter(name__icontains=search)
 
-        sort=request.GET.get('sort')
+        
+        sort = request.GET.get("sort")
         if sort == "price_asc":
-            products=products.order_by('price')
-        elif sort == 'price_desc':
-            products =products.order_by('-price')
-        elif sort == 'newest':
-            products=products.order_by('-created_at')
-        
+            products = products.order_by("price")
+        elif sort == "price_desc":
+            products = products.order_by("-price")
+        elif sort == "newest":
+            products = products.order_by("-created_at")
 
-        page=request.GET.get("page",1)
-        paginator=Paginator(products,10)
-        paginated_products=paginator.get_page(page)
+       
+        page = request.GET.get("page", 1)
+        paginator = Paginator(products, 10)
+        paginated_products = paginator.get_page(page)
 
+        serializer = ProductSerializer(paginated_products, many=True)
 
-
-        serializer=ProductSerializer(paginated_products,many=True)
         return Response({
             "total_products": paginator.count,
             "total_pages": paginator.num_pages,
@@ -67,43 +75,31 @@ class ProductListAPIView(APIView):
         }, status=status.HTTP_200_OK)
 
 
-class ProductDetailAPIView(APIView):
-    def get(self,request,pk):
-        product=get_object_or_404(Product,id=pk)
-        serializer=ProductSerializer(product)
-        return Response(serializer.data)
-    
 
-class ProductsDetailsAPIView(APIView):
-    def get(self,request,pk):
+class ProductDetailAPIView(APIView):
+    def get_object(self, pk):
         try:
-            product=Product.objects.get(pk=pk)
+            return Product.objects.get(pk=pk)
         except Product.DoesNotExist:
-            return Response({"error":"Product does not Found"},status=404)
-        
-        serializer=ProductSerializer(product)
-        return Response(serializer.data,status=status.HTTP_200_OK)
-    
+            raise Http404
+
+    def get(self, request, pk, format=None):
+        product = self.get_object(pk)
+        serializer = ProductSerializer(product)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+
 class RelatedProductsAPIView(APIView):
-    def get(self, request, pk):
+    def get(self, request, pk, format=None):
         try:
             product = Product.objects.get(pk=pk)
         except Product.DoesNotExist:
-            return Response({"error": "Product not found"}, status=404)
-
-        category_id = product.category_id
+            return Response({"error": "Product not found"}, status=status.HTTP_404_NOT_FOUND)
 
         related_products = Product.objects.filter(
-            category_id=category_id
-        ).exclude(id=pk).order_by('-created_at')[:8]
+            category_id=product.category_id
+        ).exclude(id=pk).order_by("-created_at")[:8]
 
         serializer = ProductSerializer(related_products, many=True)
-        return Response(serializer.data, status=200)
-
-
-        
-
-
-    
-
-
+        return Response(serializer.data, status=status.HTTP_200_OK)

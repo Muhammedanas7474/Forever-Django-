@@ -76,11 +76,13 @@ INSTALLED_APPS = [
     'cloudinary',
     'cloudinary_storage',
     
+    
     'users',
     'products',
     'cart',
     'wishlist',
     'order',
+    
 
 ]
 
@@ -116,6 +118,19 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'shop.wsgi.application'
+
+ASGI_APPLICATION = "shop.asgi.application"
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("127.0.0.1", 6379)],
+        },
+    },
+}
+
+
 
 
 # Database
@@ -179,8 +194,12 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "users.authentication.CookieJWTAuthentication",
         "rest_framework_simplejwt.authentication.JWTAuthentication",
-    )
+    ),
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.AllowAny",
+    ],
 }
+
 
 
 AUTH_USER_MODEL = 'users.User'
