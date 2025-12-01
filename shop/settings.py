@@ -75,6 +75,8 @@ INSTALLED_APPS = [
     'corsheaders',
     'cloudinary',
     'cloudinary_storage',
+    'drf_spectacular',
+    'drf_spectacular_sidecar',
     
     
     'users',
@@ -83,6 +85,9 @@ INSTALLED_APPS = [
     'wishlist',
     'order',
     
+    'admin_user',
+    'admin_dashboard',
+    'admin_product',
 
 ]
 
@@ -199,6 +204,16 @@ REST_FRAMEWORK = {
         "rest_framework.permissions.AllowAny",
     ],
 }
+REST_FRAMEWORK = {
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+SPECTACULAR_SETTINGS = {
+    "TITLE": "E-Commerce API",
+    "DESCRIPTION": "API documentation for E-Commerce backend",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+}
+
 
 
 
