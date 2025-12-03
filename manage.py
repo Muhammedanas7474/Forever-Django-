@@ -8,11 +8,10 @@ def main():
     """Run administrative tasks."""
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'shop.settings')
 
-    # Print Swagger link to terminal when server starts
-    print("\n===============================================")
+  
     print(" 🚀 Swagger UI available at:")
     print(" 👉 http://127.0.0.1:8000/api/docs/")
-    print("===============================================\n")
+    
 
     try:
         from django.core.management import execute_from_command_line

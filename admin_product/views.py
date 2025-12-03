@@ -1,11 +1,13 @@
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.views import APIView
-from rest_framework.permissions import IsAdminUser, IsAuthenticated
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.db.models import Q
 
 from products.models import Product, ProductImage
+from admin_user.permissions import IsAdminRole
 from .serializer import AdminProductSerializer, AdminProductCreateSerializer
 
 
@@ -16,7 +18,8 @@ class ProductPagination(PageNumberPagination):
 
 
 class AdminProductListView(APIView):
-    permission_classes = [IsAdminUser]
+    
+    permission_classes = [IsAuthenticated, IsAdminRole]
     pagination_class = ProductPagination
 
     def get(self, request):
@@ -40,6 +43,12 @@ class AdminProductListView(APIView):
 
         if serializer.is_valid():
             product = serializer.save()
+
+            # Handle multiple image upload
+            images = request.FILES.getlist("images")
+            for img in images:
+                ProductImage.objects.create(product=product, image=img)
+
             output = AdminProductSerializer(product)
             return Response(
                 {"message": "Product created successfully", "product": output.data},
@@ -50,7 +59,8 @@ class AdminProductListView(APIView):
 
 
 class AdminProductDetailView(APIView):
-    permission_classes = [IsAdminUser]
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, IsAdminRole]
 
     def patch(self, request, pk):
         try:
@@ -74,6 +84,3 @@ class AdminProductDetailView(APIView):
 
         product.delete()
         return Response({"message": "Product deleted successfully"}, status=status.HTTP_200_OK)
-
-
-

@@ -4,13 +4,14 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
-
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny
 from .models import Product, Category
 from .serializers import ProductCreateSerializer, ProductSerializer,CategorySerializer
 
 
 
 class CategoryListAPIView(APIView):
+    permission_classes = [AllowAny] 
     def get(self, request, format=None):
         categories = Category.objects.all()
         serializer = CategorySerializer(categories, many=True)
@@ -20,6 +21,7 @@ class CategoryListAPIView(APIView):
 
 
 class ProductCreateAPIView(APIView):
+    
     def post(self, request, format=None):
         serializer = ProductCreateSerializer(data=request.data)
         if serializer.is_valid():
@@ -30,6 +32,7 @@ class ProductCreateAPIView(APIView):
 
 
 class ProductListAPIView(APIView):
+    permission_classes = [AllowAny] 
     def get(self, request, format=None):
         products = Product.objects.all()
 
@@ -77,6 +80,7 @@ class ProductListAPIView(APIView):
 
 
 class ProductDetailAPIView(APIView):
+    permission_classes = [AllowAny] 
     def get_object(self, pk):
         try:
             return Product.objects.get(pk=pk)
@@ -91,6 +95,7 @@ class ProductDetailAPIView(APIView):
 
 
 class RelatedProductsAPIView(APIView):
+    permission_classes = [AllowAny] 
     def get(self, request, pk, format=None):
         try:
             product = Product.objects.get(pk=pk)

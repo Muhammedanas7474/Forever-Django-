@@ -14,9 +14,6 @@ import razorpay
 
 
 
-
-
-
 class OrderListCreateView(APIView):
     permission_classes = [IsAuthenticated]
 

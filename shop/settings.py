@@ -88,6 +88,7 @@ INSTALLED_APPS = [
     'admin_user',
     'admin_dashboard',
     'admin_product',
+    'admin_orders',
 
 ]
 
@@ -200,13 +201,12 @@ REST_FRAMEWORK = {
         "users.authentication.CookieJWTAuthentication",
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
-    "DEFAULT_PERMISSION_CLASSES": [
-        "rest_framework.permissions.AllowAny",
-    ],
-}
-REST_FRAMEWORK = {
+    "DEFAULT_PERMISSION_CLASSES": (
+        "rest_framework.permissions.IsAuthenticated",
+    ),
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
+
 SPECTACULAR_SETTINGS = {
     "TITLE": "E-Commerce API",
     "DESCRIPTION": "API documentation for E-Commerce backend",
