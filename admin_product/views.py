@@ -59,7 +59,7 @@ class AdminProductListView(APIView):
 
 
 class AdminProductDetailView(APIView):
-    # authentication_classes = [JWTAuthentication]
+   
     permission_classes = [IsAuthenticated, IsAdminRole]
 
     def patch(self, request, pk):

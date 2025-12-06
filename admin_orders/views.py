@@ -5,9 +5,6 @@ from rest_framework import status
 from rest_framework.pagination import PageNumberPagination
 from django.db.models import Q
 from admin_user.permissions import IsAdminRole
-from rest_framework_simplejwt.authentication import JWTAuthentication
-
-
 from order.models import Order
 from .serializer import AdminOrderSerializer
 
@@ -19,14 +16,17 @@ class OrderPagination(PageNumberPagination):
 
 
 class AdminOrderListView(APIView):
-    # authentication_classes = [JWTAuthentication]
+    
     permission_classes = [IsAuthenticated, IsAdminRole]
     pagination_class = OrderPagination
 
     def get(self, request):
         
+        status_filter = request.query_params.get("status")
         orders = Order.objects.all().order_by("-created_at")
 
+        if status_filter:
+            orders = orders.filter(status=status_filter)
       
         search = request.query_params.get("search")
         if search:
@@ -44,7 +44,7 @@ class AdminOrderListView(APIView):
 
 
 class AdminOrderDetailView(APIView):
-    # authentication_classes = [JWTAuthentication]
+
     permission_classes = [IsAuthenticated, IsAdminRole]
 
     def get(self, request, pk):

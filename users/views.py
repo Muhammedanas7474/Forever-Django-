@@ -1,4 +1,4 @@
-
+from django.db.models import Q
 from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny,IsAuthenticated
@@ -27,42 +27,51 @@ class RegisterAPIView(APIView):
         return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
     
 class LoginAPIView(APIView):
-    
-
     permission_classes = [AllowAny]
 
     @extend_schema(
-        request=LoginSerializer,               
-        responses={200: LoginSerializer}       
+        request=LoginSerializer,
+        responses={200: LoginSerializer},
     )
-
-    
-
     def post(self, request):
-        identifier = request.data.get("username")
+        identifier = request.data.get("username")   # username OR email from frontend
         password = request.data.get("password")
 
         if not identifier or not password:
-            return Response({"error": "Username and password required"}, status=400)
+            return Response(
+                {"error": "Username and password required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         print("LOGIN ATTEMPT:", identifier, password)
 
-        user_obj = (
-            User.objects.filter(username=identifier).first()
-            or User.objects.filter(email=identifier).first()
-        )
+        # Find user by username OR email
+        user = User.objects.filter(
+            Q(username=identifier) | Q(email=identifier)
+        ).first()
 
-        if user_obj:
-            user = authenticate(username=user_obj.username, password=password)
-        else:
-            user = None
+        if not user:
+            print("USER NOT FOUND")
+            return Response({"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
 
-        print("AUTH RESULT:", user)
+        # Check password manually
+        if not user.check_password(password):
+            print("PASSWORD MISMATCH FOR USER:", user.username)
+            return Response({"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
 
-        if user is None:
-            return Response({"error": "Invalid credentials"}, status=401)
+        # Optional: block / active checks
+        if user.blocked:
+            return Response(
+                {"message": "Your account has been blocked"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
 
-        
+        if not user.is_active:
+            return Response(
+                {"message": "Account is not active"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
         is_admin = getattr(user, "role", None) == "admin"
 
         refresh = RefreshToken.for_user(user)
@@ -71,23 +80,38 @@ class LoginAPIView(APIView):
 
         print("🔥 LOGIN ENDPOINT USED. USER ROLE:", user.role)
 
-        response = Response({
-            "message": "Login successful",
-            "user": {
-                "id": user.id,
-                "username": user.username,
-                "email": user.email,
-                "name": user.username,
-                "role": user.role,
-                "is_admin": is_admin
+        response = Response(
+            {
+                "message": "Login successful",
+                "user": {
+                    "id": user.id,
+                    "username": user.username,
+                    "email": user.email,
+                    "name": user.username,
+                    "role": user.role,
+                    "is_admin": is_admin,
+                },
+                "access_token": access_token,
+                "refresh_token": refresh_token,
             },
-            "access_token": access_token,
-            "refresh_token": refresh_token
-        }, status=200)
-        print("🔴 RETURNING RESPONSE WITH ROLE:", user.role)
+            status=status.HTTP_200_OK,
+        )
 
-        response.set_cookie("access_token", access_token, httponly=True, secure=False, samesite="Lax")
-        response.set_cookie("refresh_token", refresh_token, httponly=True, secure=False, samesite="Lax")
+        # Set cookies for SimpleJWT
+        response.set_cookie(
+            "access_token",
+            access_token,
+            httponly=True,
+            secure=False,
+            samesite="Lax",
+        )
+        response.set_cookie(
+            "refresh_token",
+            refresh_token,
+            httponly=True,
+            secure=False,
+            samesite="Lax",
+        )
 
         return response
 
