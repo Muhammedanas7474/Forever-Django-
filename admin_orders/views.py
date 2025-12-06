@@ -19,7 +19,7 @@ class OrderPagination(PageNumberPagination):
 
 
 class AdminOrderListView(APIView):
-    authentication_classes = [JWTAuthentication]
+    # authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated, IsAdminRole]
     pagination_class = OrderPagination
 
@@ -44,7 +44,7 @@ class AdminOrderListView(APIView):
 
 
 class AdminOrderDetailView(APIView):
-    authentication_classes = [JWTAuthentication]
+    # authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated, IsAdminRole]
 
     def get(self, request, pk):

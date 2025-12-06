@@ -8,7 +8,8 @@ from users.models import User
 from django.db.models import Q
 from .serializer import AdminUserListSerializer
 from rest_framework import status
-# Create your views here.
+from django.db.models import Count, Sum, Max
+
 
 
 class UserPagination(PageNumberPagination):
@@ -25,24 +26,35 @@ class UserPagination(PageNumberPagination):
             "results": data
         })
     
+
 class AdminUserListView(APIView):
-    permission_classes=[IsAdminUser]
+    permission_classes = [IsAdminUser]
     pagination_classes = UserPagination
 
-
-    def get(self,request):
-        users=User.objects.exclude(role="admin").order_by('-date_joined')
-        search=request.query_params.get("search")
-        if search:
-            users=users.filter(
-                Q(user_name__icontains=search) |
-                Q(email__icontains=search) |
-                Q(id__icontains=search)
+    def get(self, request):
+        users = (
+            User.objects.exclude(role="admin")
+            .annotate(
+                orders_count=Count("order", distinct=True),           
+                cart_items_count=Count("cart", distinct=True),        
+                total_spent=Sum("order__total_amount"),               
+                last_order=Max("order__created_at")                    
             )
-        paginator=self.pagination_classes()
-        result_page=paginator.paginate_queryset(users,request)
-        serialzier=AdminUserListSerializer(result_page,many=True)
-        return paginator.get_paginated_response(serialzier.data)
+            .order_by("-date_joined")
+        )
+
+        search = request.query_params.get("search")
+        if search:
+            users = users.filter(
+                Q(user_name__icontains=search)
+                | Q(email__icontains=search)
+                | Q(id__icontains=search)
+            )
+
+        paginator = self.pagination_classes()
+        result_page = paginator.paginate_queryset(users, request)
+        serializer = AdminUserListSerializer(result_page, many=True)
+        return paginator.get_paginated_response(serializer.data)
     
 
 class AdminDetailView(APIView):

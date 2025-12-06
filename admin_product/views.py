@@ -44,7 +44,7 @@ class AdminProductListView(APIView):
         if serializer.is_valid():
             product = serializer.save()
 
-            # Handle multiple image upload
+            
             images = request.FILES.getlist("images")
             for img in images:
                 ProductImage.objects.create(product=product, image=img)
@@ -59,7 +59,7 @@ class AdminProductListView(APIView):
 
 
 class AdminProductDetailView(APIView):
-    authentication_classes = [JWTAuthentication]
+    # authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated, IsAdminRole]
 
     def patch(self, request, pk):
