@@ -13,6 +13,7 @@ from products.models import Product
 
 
 class DashboardStatsAPIView(APIView):
+    authentication_classes = []  # Use default authentication classes
     permission_classes = [IsAuthenticated, IsAdminRole]
 
     def get(self, request):

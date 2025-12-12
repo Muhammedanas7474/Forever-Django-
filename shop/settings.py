@@ -65,7 +65,9 @@ INSTALLED_APPS = [
     'admin_orders',
 ]
 
-
+# ===========================================
+# MIDDLEWARE
+# ===========================================
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
@@ -79,7 +81,9 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'shop.urls'
 
-
+# ===========================================
+# TEMPLATES
+# ===========================================
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -98,7 +102,9 @@ TEMPLATES = [
 WSGI_APPLICATION = 'shop.wsgi.application'
 ASGI_APPLICATION = "shop.asgi.application"
 
-
+# ===========================================
+# CHANNELS (WEBSOCKETS)
+# ===========================================
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
@@ -108,7 +114,9 @@ CHANNEL_LAYERS = {
     },
 }
 
-
+# ===========================================
+# DATABASE
+# ===========================================
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -120,7 +128,9 @@ DATABASES = {
     }
 }
 
-
+# ===========================================
+# PASSWORD VALIDATION
+# ===========================================
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
@@ -128,17 +138,23 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
-
+# ===========================================
+# INTERNATIONALIZATION
+# ===========================================
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
-
+# ===========================================
+# STATIC FILES
+# ===========================================
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-
+# ===========================================
+# MEDIA FILES (Cloudinary)
+# ===========================================
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 CLOUDINARY_STORAGE = {
@@ -154,7 +170,9 @@ cloudinary.config(
     api_secret=os.getenv("CLOUDINARY_API_SECRET")
 )
 
-
+# ===========================================
+# DRF & JWT
+# ===========================================
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "users.authentication.CookieJWTAuthentication",
@@ -179,13 +197,20 @@ SIMPLE_JWT = {
     'AUTH_COOKIE_SAMESITE': 'Lax',
 }
 
-
+# ===========================================
+# RAZORPAY
+# ===========================================
 RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID")
 RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET")
 
+# ===========================================
+# AUTH USER MODEL
+# ===========================================
 AUTH_USER_MODEL = 'users.User'
 
-
+# ===========================================
+# DEFAULT PRIMARY KEY FIELD TYPE
+# ===========================================
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # ===========================================
